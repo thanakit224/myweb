@@ -1,0 +1,40 @@
+{% extends "master.html" %}
+
+{% block content %}
+    <h1>{{ message }}</h1>
+
+    {% if score > 85 %}
+        <h1>Grade A</h1>
+    {% endif %}
+
+    <ul>
+        {% for x in activities %}
+            <li>{{ x }}</li>
+        {% endfor %}
+    </ul>
+
+    <h5>{{ username }}</h5>
+    <h5>{{ email }}</h5>
+
+    <br>
+    <hr>
+
+    <h2>Real-Time Clock (AJAX)</h2>
+    <h1 id="datetime">Loading...</h1>
+
+    <script>
+    function loadDateTime() {
+        fetch('/api/servertime')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('datetime').innerText = data.datetime;
+            })
+            .catch(error => console.error(error));
+    }
+    // ให้ดึงเวลาใหม่ทุกๆ 1 วินาที
+    setInterval(loadDateTime, 1000);
+    // โหลดครั้งแรกทันที
+    loadDateTime();
+    </script>
+
+{% endblock %}
