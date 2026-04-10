@@ -381,3 +381,6 @@ def user_list(user = Depends(verify_token)): # ตัว Depends จะบัง
         "message": "List of users",
         "current_user": user # คืนค่าข้อมูลที่ถอดรหัสได้กลับไปให้ดูด้วย
     }
+
+
+print("dawdsad")
