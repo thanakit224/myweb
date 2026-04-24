@@ -18,8 +18,8 @@ from datetime import timedelta
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi import HTTPException
 from jwt_auth import create_token
-from fastapi import Depends  # เพิ่ม Depends ถ้ายังไม่มี
-from jwt_auth import verify_token # ดึงฟังก์ชัน verify_token เข้ามาใช้งาน
+from fastapi import Depends
+from jwt_auth import verify_token
 
 
 
@@ -52,16 +52,18 @@ def get_db():
         db.close()
 
 
-@app.get("/", response_class=HTMLResponse)
-def home(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "message": "Welcome to My Web App",
-        "username": "Somchai",
-        "email": "somchai@mail.com",
-        "score": 95,
-        "activities": ["Running", "Go", "Football"]
-    })
+@app.get("/")  # หรือเส้นทาง (Path) อื่นที่คุณต้องการ
+async def home(request: Request): # ต้องมีบรรทัดนี้อยู่ข้างบน
+    # บรรทัด return ต้องมีย่อหน้าเข้าไป (กด Space 4 ครั้ง หรือกด Tab 1 ครั้ง)
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "message": "Hello World",
+            "score": 76,
+            "activities": ["Running", "Go", "Football"]
+        }
+    )
 
 # --- แสดงรายการสินค้า (Read) ---
 @app.get("/products", response_class=HTMLResponse)
@@ -220,14 +222,13 @@ def process_ocr(image_path):
         "amount": amount,
         "datetime": date_match,
     }
-
-# def parse_thai_datetime(text):
-#    thai_months = {
-  #      "ม.ค.": 1, "ก.พ.": 2, "มี.ค.": 3,
- #       "เม.ย.": 4, "พ.ค.": 5, "มิ.ย.": 6,
- #       "ก.ค.": 7, "ส.ค.": 8, "ก.ย.": 9,
- #       "ต.ค.": 10, "พ.ย.": 11, "ธ.ค.": 12
-    #}
+def parse_thai_datetime(text):
+    thai_months = {
+        "ม.ค.": 1, "ก.พ.": 2, "มี.ค.": 3,
+        "เม.ย.": 4, "พ.ค.": 5, "มิ.ย.": 6,
+        "ก.ค.": 7, "ส.ค.": 8, "ก.ย.": 9,
+        "ต.ค.": 10, "พ.ย.": 11, "ธ.ค.": 12
+    }
 
     match = re.search(
         r'(\d{1,2})\s+([^\s]+)\s+(\d{2})(?:.*?(\d{1,2}):(\d{2}))?',
@@ -346,23 +347,27 @@ def get_current_user(request: Request):
         return RedirectResponse("/login", status_code=303)
     return user
 
+# --- ส่วนที่ต้องแก้ไข (อยู่ท้ายไฟล์) ---
+
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, user=Depends(get_current_user)):
-    if isinstance(user, RedirectResponse):
-        return user
+    # ถ้าไม่มี user ให้ Redirect ไปหน้า login (get_current_user ต้องส่งค่ากลับมาเช็ค)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
 
-    # รวมโค้ดแสดงผลหน้า Home มาไว้ตรงนี้
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "message": "Welcome to My Web App",
-        "username": user, # ดึงชื่อ user จากคนที่ล็อกอินเข้ามาแสดงได้เลย
-        "email": "somchai@mail.com",
-        "score": 95,
-        "activities": ["Running", "Go", "Football"]
-    })
+    # บรรทัดนี้ต้อง "ย่อหน้า" เข้ามาให้ตรงกับ if ด้านบน
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "message": "Hello World",
+            "score": 76,
+            "activities": ["Running", "Go", "Football"]
+        }
+    )
 
 @app.post("/api/login")
-def api_login(username: str, password: str):
+def api_login(username: str = Form(...), password: str = Form(...)): # เพิ่ม Form(...) เพื่อให้รับค่าจากหน้าบ้านได้
     if username == "admin" and password == "1234":
         token = create_token(username)
         return {
@@ -374,27 +379,9 @@ def api_login(username: str, password: str):
         detail="Invalid username or password"
     )
 
-# เพิ่มไว้ด้านล่างสุดของ main.py
 @app.get("/api/v1/users")
-def user_list(user = Depends(verify_token)): # ตัว Depends จะบังคับให้ต้องเช็ค Token ก่อน
+def user_list(user = Depends(verify_token)):
     return {
         "message": "List of users",
-        "current_user": user # คืนค่าข้อมูลที่ถอดรหัสได้กลับไปให้ดูด้วย
+        "current_user": user
     }
-
-
-print("abcd")
-
-# Unit test
-@app.get('/api/hello')
-def hello_api():
-    return {'message': 'API Works!'}
-
-
-@app.get('/api/grade')
-def grade_api(score:float = None):
-    if score >= 85:
-        return {'grade': 'A'}
-    elif score >= 75 and score < 85:
-        return {'grade': 'B+'}
-    return {'grade': 'F'}
