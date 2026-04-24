@@ -11,8 +11,8 @@ from fastapi.responses import HTMLResponse
 import models
 from database import engine, SessionLocal
 from models import Product, Category
-import easyocr
-import re
+#import easyocr
+#import re
 from models import Order
 from datetime import timedelta
 from starlette.middleware.sessions import SessionMiddleware
@@ -184,7 +184,7 @@ def product_search_api(search: str = ""):
 
 
 
-reader = easyocr.Reader(['th', 'en'])
+#reader = easyocr.Reader(['th', 'en'])
 
 @app.get("/pvs/upload", response_class=HTMLResponse)
 def pvs_upload(request: Request):
@@ -221,13 +221,13 @@ def process_ocr(image_path):
         "datetime": date_match,
     }
 
-def parse_thai_datetime(text):
-    thai_months = {
-        "ม.ค.": 1, "ก.พ.": 2, "มี.ค.": 3,
-        "เม.ย.": 4, "พ.ค.": 5, "มิ.ย.": 6,
-        "ก.ค.": 7, "ส.ค.": 8, "ก.ย.": 9,
-        "ต.ค.": 10, "พ.ย.": 11, "ธ.ค.": 12
-    }
+# def parse_thai_datetime(text):
+#    thai_months = {
+  #      "ม.ค.": 1, "ก.พ.": 2, "มี.ค.": 3,
+ #       "เม.ย.": 4, "พ.ค.": 5, "มิ.ย.": 6,
+ #       "ก.ค.": 7, "ส.ค.": 8, "ก.ย.": 9,
+ #       "ต.ค.": 10, "พ.ย.": 11, "ธ.ค.": 12
+    #}
 
     match = re.search(
         r'(\d{1,2})\s+([^\s]+)\s+(\d{2})(?:.*?(\d{1,2}):(\d{2}))?',

@@ -3,6 +3,6 @@ sqlalchemy
 jinja2
 
 itsdangerous
-easyocr
+#easyocr
 pyjwt
 pytest
